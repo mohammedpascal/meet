@@ -2,6 +2,9 @@
   "name": "meet",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  },
   "imports": {
     "#/*": "./src/*"
   },
