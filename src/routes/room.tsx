@@ -75,7 +75,7 @@ function RoomPage() {
             <span className="font-medium text-[var(--lagoon-deep)]">
               meet.successta.co
             </span>
-            . Set <code>LIVEKIT_API_KEY</code> and{' '}
+            . Set <code>LIVEKIT_URL</code>, <code>LIVEKIT_API_KEY</code>, and{' '}
             <code>LIVEKIT_API_SECRET</code> in <code>.env</code> for token
             minting.
           </p>

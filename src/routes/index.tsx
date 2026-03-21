@@ -77,8 +77,8 @@ function App() {
             self-hosted keys).
           </li>
           <li>
-            Optional: <code>LIVEKIT_URL</code> defaults to{' '}
-            <code>wss://meet.successta.co</code> if unset.
+            Set <code>LIVEKIT_URL</code> to your WebSocket URL, for example{' '}
+            <code>wss://meet.successta.co</code>.
           </li>
         </ul>
       </section>
