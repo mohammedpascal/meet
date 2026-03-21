@@ -15,7 +15,7 @@ function App() {
         <p className="mb-8 max-w-2xl text-base text-[var(--sea-ink-soft)] sm:text-lg">
           Join a room on{' '}
           <span className="font-medium text-[var(--lagoon-deep)]">
-            livekit.successta.co
+            livekit.successta.com
           </span>
           . Pick a room name and display name, then connect with camera and
           microphone.
