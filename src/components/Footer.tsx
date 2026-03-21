@@ -1,5 +1,17 @@
+import { useRouterState } from '@tanstack/react-router'
+import { useCallUi } from '../context/call-ui-context'
+
 export default function Footer() {
   const year = new Date().getFullYear()
+  const {
+    info: { active: inCall },
+  } = useCallUi()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const onJoinLounge = pathname === '/' && !inCall
+
+  if (inCall || onJoinLounge) {
+    return null
+  }
 
   return (
     <footer className="mt-20 border-t border-[var(--line)] px-4 pb-14 pt-10 text-[var(--sea-ink-soft)]">

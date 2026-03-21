@@ -1,7 +1,18 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
+import { useCallUi } from '../context/call-ui-context'
 import ThemeToggle from './ThemeToggle'
 
 export default function Header() {
+  const {
+    info: { active: inCall },
+  } = useCallUi()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const onJoinLounge = pathname === '/' && !inCall
+
+  if (inCall || onJoinLounge) {
+    return null
+  }
+
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--header-bg)] px-4 backdrop-blur-lg">
       <nav className="page-wrap flex flex-wrap items-center justify-between gap-3 py-3 sm:py-4">

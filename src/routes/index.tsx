@@ -2,6 +2,10 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { useCallback, useEffect, useState } from 'react'
 import LiveKitMeeting from '../components/LiveKitMeeting'
+import JoinPageShell from '../components/join/JoinPageShell'
+import PreCallCard from '../components/join/PreCallCard'
+import { usePreviewMedia } from '../components/join/usePreviewMedia'
+import { useCallUi } from '../context/call-ui-context'
 import { getLiveKitToken } from '../server/livekit-token'
 
 export const Route = createFileRoute('/')({
@@ -16,23 +20,40 @@ function MeetPage() {
   const { room: roomFromUrl, name: nameFromUrl } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
   const fetchToken = useServerFn(getLiveKitToken)
+  const { setCallSession } = useCallUi()
 
   const [room, setRoom] = useState(roomFromUrl)
   const [name, setName] = useState(nameFromUrl)
   const [session, setSession] = useState<{
     token: string
     serverUrl: string
+    connectMic: boolean
+    connectCam: boolean
   } | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const {
+    stream,
+    permissionDenied,
+    videoEnabled,
+    audioEnabled,
+    setVideoEnabled,
+    setAudioEnabled,
+  } = usePreviewMedia(session === null)
+
   const join = useCallback(
-    async (r: string, n: string) => {
+    async (r: string, n: string, connectMic: boolean, connectCam: boolean) => {
       setError(null)
       setBusy(true)
       try {
         const out = await fetchToken({ data: { room: r, name: n } })
-        setSession({ token: out.token, serverUrl: out.serverUrl })
+        setSession({
+          token: out.token,
+          serverUrl: out.serverUrl,
+          connectMic,
+          connectCam,
+        })
         void navigate({
           search: { room: r, name: n },
           replace: true,
@@ -52,76 +73,76 @@ function MeetPage() {
     setName(nameFromUrl)
   }, [roomFromUrl, nameFromUrl])
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    void join(room.trim(), name.trim())
+  useEffect(() => {
+    if (!session) {
+      setCallSession({
+        active: false,
+        roomLabel: '',
+        selfDisplayName: '',
+      })
+      return
+    }
+    setCallSession({
+      active: true,
+      roomLabel: room,
+      selfDisplayName: name,
+    })
+    return () => {
+      setCallSession({
+        active: false,
+        roomLabel: '',
+        selfDisplayName: '',
+      })
+    }
+  }, [session, room, name, setCallSession])
+
+  const handleJoin = () => {
+    void join(room.trim(), name.trim(), audioEnabled, videoEnabled)
   }
 
   const leave = () => {
     setSession(null)
-    void navigate({ search: { room: '', name: '' }, replace: true })
+    void navigate({
+      search: { room: room.trim(), name: name.trim() },
+      replace: true,
+    })
   }
 
   return (
-    <main className="page-wrap px-4 pb-10 pt-10">
+    <main
+      className={
+        session
+          ? 'page-wrap min-h-screen px-4 pb-10 pt-6'
+          : 'join-page min-h-screen px-0 pb-8 pt-4 sm:pt-6'
+      }
+    >
       {!session ? (
-        <>
-          <h1 className="display-title m-0 text-3xl font-bold tracking-tight text-[var(--sea-ink)] sm:text-4xl">
-            Join a room
-          </h1>
-          <p className="mt-2 max-w-xl text-sm text-[var(--sea-ink-soft)]">
-            Enter a room name and your name, then connect with camera and
-            microphone.
-          </p>
-
-          <form
-            onSubmit={handleSubmit}
-            className="island-shell rise-in mt-8 max-w-md rounded-2xl p-6 sm:p-8"
-          >
-            <label className="mb-4 block">
-              <span className="mb-1.5 block text-xs font-bold tracking-wide text-[var(--sea-ink-soft)] uppercase">
-                Room
-              </span>
-              <input
-                value={room}
-                onChange={(e) => setRoom(e.target.value)}
-                placeholder="e.g. standup"
-                required
-                autoComplete="off"
-                className="w-full rounded-xl border border-[var(--line)] bg-white/90 px-4 py-3 text-[var(--sea-ink)] outline-none transition focus:border-[var(--lagoon-deep)] focus:ring-2 focus:ring-[rgba(79,184,178,0.35)]"
-              />
-            </label>
-            <label className="mb-6 block">
-              <span className="mb-1.5 block text-xs font-bold tracking-wide text-[var(--sea-ink-soft)] uppercase">
-                Your name
-              </span>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Display name"
-                required
-                autoComplete="name"
-                className="w-full rounded-xl border border-[var(--line)] bg-white/90 px-4 py-3 text-[var(--sea-ink)] outline-none transition focus:border-[var(--lagoon-deep)] focus:ring-2 focus:ring-[rgba(79,184,178,0.35)]"
-              />
-            </label>
-            {error ? (
-              <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
-                {error}
-              </p>
-            ) : null}
-            <button
-              type="submit"
-              disabled={busy}
-              className="w-full rounded-full bg-[linear-gradient(90deg,var(--lagoon),#7ed3bf)] px-5 py-3 text-sm font-bold text-[#0f2a2e] shadow-[0_12px_28px_rgba(50,143,151,0.35)] transition enabled:hover:-translate-y-0.5 enabled:hover:shadow-[0_16px_34px_rgba(50,143,151,0.42)] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {busy ? 'Connecting…' : 'Join room'}
-            </button>
-          </form>
-        </>
+        <JoinPageShell>
+          <PreCallCard
+            stream={stream}
+            videoEnabled={videoEnabled}
+            audioEnabled={audioEnabled}
+            onToggleVideo={() => setVideoEnabled((v) => !v)}
+            onToggleAudio={() => setAudioEnabled((v) => !v)}
+            permissionDenied={permissionDenied}
+            room={room}
+            name={name}
+            onRoomChange={setRoom}
+            onNameChange={setName}
+            onJoin={handleJoin}
+            joinDisabled={!room.trim() || !name.trim()}
+            joining={busy}
+            error={error}
+          />
+        </JoinPageShell>
       ) : (
         <LiveKitMeeting
           token={session.token}
           serverUrl={session.serverUrl}
+          roomLabel={room}
+          selfDisplayName={name}
+          connectMic={session.connectMic}
+          connectCam={session.connectCam}
           onLeave={leave}
         />
       )}

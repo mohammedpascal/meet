@@ -1,17 +1,27 @@
 import { useEffect, useState } from 'react'
-import { LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
-import { VideoConference } from '@livekit/components-react/prefabs'
+import { LiveKitRoom, RoomAudioRenderer, StartAudio } from '@livekit/components-react'
 import '@livekit/components-styles'
+import SitanaCallExperience from './call/SitanaCallExperience'
 
 type Props = {
   token: string
   serverUrl: string
+  roomLabel: string
+  selfDisplayName: string
+  /** Match pre-call mic toggle: publish microphone when connecting */
+  connectMic: boolean
+  /** Match pre-call camera toggle: publish camera when connecting */
+  connectCam: boolean
   onLeave: () => void
 }
 
 export default function LiveKitMeeting({
   token,
   serverUrl,
+  roomLabel,
+  selfDisplayName,
+  connectMic,
+  connectCam,
   onLeave,
 }: Props) {
   const [mounted, setMounted] = useState(false)
@@ -22,40 +32,32 @@ export default function LiveKitMeeting({
 
   if (!mounted) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center rounded-2xl border border-[var(--line)] bg-[var(--surface-strong)] px-6 py-16 text-sm text-[var(--sea-ink-soft)]">
-        Preparing media…
+      <div className="mx-auto flex min-h-[50vh] max-w-5xl items-center justify-center rounded-2xl border border-slate-200/90 bg-white px-6 py-16 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+        Preparing secure consultation…
       </div>
     )
   }
 
   return (
-    <div className="lk-room-wrap overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--sand)] shadow-[0_22px_44px_rgba(30,90,72,0.12)]">
-      <LiveKitRoom
-        serverUrl={serverUrl}
-        token={token}
-        connect
-        audio
-        video
-        onDisconnected={() => onLeave()}
-        onError={(err) => {
-          console.error(err)
-        }}
-        className="lk-room-inner"
-      >
-        <div className="flex max-h-[min(72vh,calc(100vh-12rem))] min-h-[420px] flex-col">
-          <VideoConference />
-          <RoomAudioRenderer />
-        </div>
-      </LiveKitRoom>
-      <div className="flex justify-end border-t border-[var(--line)] bg-[var(--surface-strong)] px-3 py-2">
-        <button
-          type="button"
-          onClick={onLeave}
-          className="rounded-full border border-[var(--line)] bg-white/80 px-4 py-2 text-sm font-semibold text-[var(--sea-ink)] transition hover:bg-white"
-        >
-          Leave room
-        </button>
-      </div>
-    </div>
+    <LiveKitRoom
+      serverUrl={serverUrl}
+      token={token}
+      connect
+      audio={connectMic}
+      video={connectCam}
+      onDisconnected={() => onLeave()}
+      onError={(err) => {
+        console.error(err)
+      }}
+      className="call-livekit-root"
+    >
+      <RoomAudioRenderer />
+      <StartAudio label="Enable consultation audio" />
+      <SitanaCallExperience
+        roomLabel={roomLabel}
+        selfDisplayName={selfDisplayName}
+        onLeave={onLeave}
+      />
+    </LiveKitRoom>
   )
 }
