@@ -21,7 +21,7 @@ function parseJoinInput(input: unknown): { room: string; name: string } {
   return { room, name }
 }
 
-/** Mint a participant token. Requires LIVEKIT_API_KEY, LIVEKIT_API_SECRET, and LIVEKIT_URL (e.g. wss://meet.successta.co). */
+/** Mint a participant token. Requires LIVEKIT_API_KEY, LIVEKIT_API_SECRET, and LIVEKIT_URL (e.g. wss://livekit.successta.co). */
 export const getLiveKitToken = createServerFn({ method: 'POST' })
   .inputValidator((input: unknown) => parseJoinInput(input))
   .handler(async ({ data }) => {

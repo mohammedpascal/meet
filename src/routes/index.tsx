@@ -15,7 +15,7 @@ function App() {
         <p className="mb-8 max-w-2xl text-base text-[var(--sea-ink-soft)] sm:text-lg">
           Join a room on{' '}
           <span className="font-medium text-[var(--lagoon-deep)]">
-            meet.successta.co
+            livekit.successta.co
           </span>
           . Pick a room name and display name, then connect with camera and
           microphone.
@@ -78,7 +78,7 @@ function App() {
           </li>
           <li>
             Set <code>LIVEKIT_URL</code> to your WebSocket URL, for example{' '}
-            <code>wss://meet.successta.co</code>.
+            <code>wss://livekit.successta.co</code>.
           </li>
         </ul>
       </section>
