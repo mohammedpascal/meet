@@ -19,38 +19,53 @@ import LeaveCallButton from './LeaveCallButton'
 
 const VIEW_MARGIN = 8
 
-function clampDockOffset(
-  el: HTMLElement,
-  x: number,
-  y: number,
-  margin: number,
+/**
+ * Clamp translate offset without touching DOM. `rectAtRef` must be
+ * getBoundingClientRect() when the dock was at (refOx, refOy).
+ * Moving to (nx, ny) shifts the box by (nx - refOx, ny - refOy).
+ */
+function clampDockOffsetPure(
+  nx: number,
+  ny: number,
+  refOx: number,
+  refOy: number,
+  rectAtRef: DOMRect,
   bounds: DOMRect | null,
+  margin: number,
 ): { x: number; y: number } {
-  let nx = x
-  let ny = y
-  for (let i = 0; i < 10; i++) {
-    el.style.transform = `translate(calc(-50% + ${nx}px), ${ny}px)`
-    const r = el.getBoundingClientRect()
+  const minL = bounds ? bounds.left + margin : margin
+  const maxR = bounds
+    ? bounds.right - margin
+    : typeof window !== 'undefined'
+      ? window.innerWidth - margin
+      : Number.POSITIVE_INFINITY
+  const minT = bounds ? bounds.top + margin : margin
+  const maxB = bounds
+    ? bounds.bottom - margin
+    : typeof window !== 'undefined'
+      ? window.innerHeight - margin
+      : Number.POSITIVE_INFINITY
+
+  let cx = nx
+  let cy = ny
+  for (let i = 0; i < 8; i++) {
+    const dx = cx - refOx
+    const dy = cy - refOy
+    const left = rectAtRef.left + dx
+    const right = rectAtRef.right + dx
+    const top = rectAtRef.top + dy
+    const bottom = rectAtRef.bottom + dy
     let ax = 0
     let ay = 0
-    const minL = bounds ? bounds.left + margin : margin
-    const maxR = bounds
-      ? bounds.right - margin
-      : window.innerWidth - margin
-    const minT = bounds ? bounds.top + margin : margin
-    const maxB = bounds
-      ? bounds.bottom - margin
-      : window.innerHeight - margin
-    if (r.left < minL) ax = minL - r.left
-    if (r.right > maxR) ax -= r.right - maxR
-    if (r.top < minT) ay = minT - r.top
-    if (r.bottom > maxB) ay -= r.bottom - maxB
-    if (!ax && !ay) break
-    nx += ax
-    ny += ay
+    if (left < minL) ax += minL - left
+    if (right > maxR) ax -= right - maxR
+    if (top < minT) ay += minT - top
+    if (bottom > maxB) ay -= bottom - maxB
+    if (!ax && !ay) return { x: cx, y: cy }
+    cx += ax
+    cy += ay
   }
-  el.style.removeProperty('transform')
-  return { x: nx, y: ny }
+  return { x: cx, y: cy }
 }
 
 const dockBtn =
@@ -179,14 +194,22 @@ export default function FloatingControlsDock({
 }: Props) {
   const screen = useTrackToggle({ source: Track.Source.ScreenShare })
   const [offset, setOffset] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
+  const offsetRef = useRef(offset)
+  offsetRef.current = offset
+
   const dragRef = useRef<{
     pointerId: number
     startX: number
     startY: number
     ox: number
     oy: number
+    rect: DOMRect
   } | null>(null)
+
+  const dragRafRef = useRef<number | null>(null)
+  const pendingOffsetRef = useRef<{ x: number; y: number } | null>(null)
 
   const getBounds = useCallback(
     () => dockBoundsRef.current?.getBoundingClientRect() ?? null,
@@ -196,10 +219,23 @@ export default function FloatingControlsDock({
   const reclamp = useCallback(() => {
     const el = rootRef.current
     if (!el) return
-    setOffset((o) =>
-      clampDockOffset(el, o.x, o.y, VIEW_MARGIN, getBounds()),
-    )
+    setOffset((o) => {
+      const r = el.getBoundingClientRect()
+      return clampDockOffsetPure(o.x, o.y, o.x, o.y, r, getBounds(), VIEW_MARGIN)
+    })
   }, [getBounds])
+
+  const flushDragRaf = useCallback(() => {
+    dragRafRef.current = null
+    const p = pendingOffsetRef.current
+    pendingOffsetRef.current = null
+    if (p) setOffset(p)
+  }, [])
+
+  const scheduleDragOffset = useCallback(() => {
+    if (dragRafRef.current != null) return
+    dragRafRef.current = requestAnimationFrame(flushDragRaf)
+  }, [flushDragRaf])
 
   useEffect(() => {
     window.addEventListener('resize', reclamp)
@@ -210,32 +246,51 @@ export default function FloatingControlsDock({
     reclamp()
   }, [sidePanelOpen, reclamp])
 
+  useEffect(
+    () => () => {
+      if (dragRafRef.current != null) {
+        cancelAnimationFrame(dragRafRef.current)
+      }
+    },
+    [],
+  )
+
   const onHandlePointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0) return
+    const el = rootRef.current
+    if (!el) return
     e.preventDefault()
     e.currentTarget.setPointerCapture(e.pointerId)
+    const ox = offsetRef.current.x
+    const oy = offsetRef.current.y
     dragRef.current = {
       pointerId: e.pointerId,
       startX: e.clientX,
       startY: e.clientY,
-      ox: offset.x,
-      oy: offset.y,
+      ox,
+      oy,
+      rect: el.getBoundingClientRect(),
     }
+    pendingOffsetRef.current = null
+    setIsDragging(true)
   }
 
   const onHandlePointerMove = (e: React.PointerEvent) => {
     const d = dragRef.current
     if (!d || e.pointerId !== d.pointerId) return
-    const dx = e.clientX - d.startX
-    const dy = e.clientY - d.startY
-    const nx = d.ox + dx
-    const ny = d.oy + dy
-    const el = rootRef.current
-    if (el) {
-      setOffset(clampDockOffset(el, nx, ny, VIEW_MARGIN, getBounds()))
-    } else {
-      setOffset({ x: nx, y: ny })
-    }
+    const nx = d.ox + (e.clientX - d.startX)
+    const ny = d.oy + (e.clientY - d.startY)
+    const clamped = clampDockOffsetPure(
+      nx,
+      ny,
+      d.ox,
+      d.oy,
+      d.rect,
+      getBounds(),
+      VIEW_MARGIN,
+    )
+    pendingOffsetRef.current = clamped
+    scheduleDragOffset()
   }
 
   const endDrag = (e: React.PointerEvent) => {
@@ -247,6 +302,15 @@ export default function FloatingControlsDock({
       /* already released */
     }
     dragRef.current = null
+    setIsDragging(false)
+
+    if (dragRafRef.current != null) {
+      cancelAnimationFrame(dragRafRef.current)
+      dragRafRef.current = null
+    }
+    const p = pendingOffsetRef.current
+    pendingOffsetRef.current = null
+    if (p) setOffset(p)
   }
 
   const panelActive = (tab: SidePanelTab) =>
@@ -255,7 +319,7 @@ export default function FloatingControlsDock({
   return (
     <div
       ref={rootRef}
-      className="pointer-events-auto absolute left-1/2 z-30 w-[calc(100%-1.5rem)] max-w-3xl sm:w-auto sm:min-w-0"
+      className={`pointer-events-auto absolute left-1/2 z-30 w-[calc(100%-1.5rem)] max-w-3xl sm:w-auto sm:min-w-0 ${isDragging ? 'will-change-transform transition-none' : ''}`}
       style={{
         bottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
         transform: `translate(calc(-50% + ${offset.x}px), ${offset.y}px)`,
