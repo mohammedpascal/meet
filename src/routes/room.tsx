@@ -73,7 +73,7 @@ function RoomPage() {
           <p className="mt-2 max-w-xl text-sm text-[var(--sea-ink-soft)]">
             Connects to your server at{' '}
             <span className="font-medium text-[var(--lagoon-deep)]">
-              livekit.successta.co
+              livekit.successta.com
             </span>
             . Set <code>LIVEKIT_URL</code>, <code>LIVEKIT_API_KEY</code>, and{' '}
             <code>LIVEKIT_API_SECRET</code> in <code>.env</code> for token
