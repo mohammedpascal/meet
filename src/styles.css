@@ -244,15 +244,103 @@ a {
   }
 }
 
-/* Consultation call: keep LiveKit chat scroll contained in the side panel */
-.lk-chat-custom {
+/* Call side panel: chat tab — layout only; messages sit on panel bg (no inner card) */
+.call-side-panel-chat {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
-.lk-chat-custom .lk-chat-messages,
-.lk-chat-custom [class*='lk-list'] {
-  flex: 1;
+.call-side-panel-chat .lk-chat {
+  flex: 1 1 0%;
   min-height: 0;
-  max-height: min(52vh, 28rem);
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  border: none;
+  background-color: transparent;
+  align-items: stretch;
+  box-sizing: border-box;
+  /* Two rows: messages + composer (LiveKit default is 3 rows with .lk-chat-header) */
+  --lk-chat-header-height: 0;
+  grid-template-rows: 1fr auto;
+}
+
+.call-side-panel-chat .lk-chat-messages {
+  min-height: 0;
   overflow-y: auto;
+}
+
+/* Prefab always renders this node; hide "Messages" bar in side panel */
+.call-side-panel-chat .lk-chat-header {
+  display: none;
+}
+
+.call-side-panel-chat .lk-chat-form {
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.375rem;
+  padding: 0.125rem 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  max-height: none;
+  min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.call-side-panel-chat .lk-chat-form-input {
+  flex: 1 1 0%;
+  min-width: 0;
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.3125rem 0.625rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: rgb(241 245 249);
+  background-color: rgb(30 41 59 / 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 0.625rem;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+}
+
+.call-side-panel-chat .lk-chat-form-input::placeholder {
+  color: rgb(148 163 184);
+}
+
+.call-side-panel-chat .lk-chat-form-input:focus {
+  outline: none;
+  border-color: rgb(45 212 191 / 0.45);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.04),
+    0 0 0 2px rgb(45 212 191 / 0.18);
+}
+
+.call-side-panel-chat .lk-chat-form-input:disabled {
+  opacity: 0.55;
+}
+
+.call-side-panel-chat .lk-chat-form .lk-button {
+  flex-shrink: 0;
+  padding: 0.3125rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(15 23 42);
+  background-color: rgb(45 212 191);
+  border-radius: 0.625rem;
+}
+
+.call-side-panel-chat .lk-chat-form .lk-button:hover:not(:disabled) {
+  background-color: rgb(94 234 212);
+}
+
+.call-side-panel-chat .lk-chat-form .lk-button:disabled {
+  opacity: 0.45;
 }

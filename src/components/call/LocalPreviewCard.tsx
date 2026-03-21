@@ -5,16 +5,27 @@ import { useParticipantTracks } from '@livekit/components-react'
 import { Track } from 'livekit-client'
 import { VideoOff } from 'lucide-react'
 
-export default function LocalPreviewCard() {
+type Props = {
+  topOffset?: 'default' | 'below-header'
+}
+
+export default function LocalPreviewCard({
+  topOffset = 'default',
+}: Props) {
   const { localParticipant, isCameraEnabled } = useLocalParticipant()
   const tracks = useParticipantTracks([Track.Source.Camera], {
     participantIdentity: localParticipant.identity,
   })
   const cam = tracks[0]
 
+  const topClass =
+    topOffset === 'below-header'
+      ? 'right-3 top-20 z-20 sm:right-4 sm:top-24'
+      : 'right-3 top-3 z-20 sm:right-4 sm:top-4'
+
   return (
     <div
-      className="absolute right-3 top-3 z-20 w-[28%] min-w-[120px] max-w-[220px] sm:right-4 sm:top-4"
+      className={`absolute w-[28%] min-w-[120px] max-w-[220px] ${topClass}`}
       style={{ aspectRatio: '16 / 10' }}
     >
       <div className="relative h-full w-full overflow-hidden rounded-xl bg-slate-950/90 shadow-[0_12px_40px_rgba(0,0,0,0.35)] ring-2 ring-white/25 ring-offset-2 ring-offset-slate-950/0">

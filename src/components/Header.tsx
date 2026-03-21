@@ -1,6 +1,5 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { useCallUi } from '../context/call-ui-context'
-import ThemeToggle from './ThemeToggle'
 
 export default function Header() {
   const {
@@ -15,7 +14,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--header-bg)] px-4 backdrop-blur-lg">
-      <nav className="page-wrap flex flex-wrap items-center justify-between gap-3 py-3 sm:py-4">
+      <nav className="page-wrap flex flex-wrap items-center gap-3 py-3 sm:py-4">
         <h2 className="m-0 shrink-0 text-base font-semibold tracking-tight">
           <Link
             to="/"
@@ -26,10 +25,6 @@ export default function Header() {
             Meet
           </Link>
         </h2>
-
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-        </div>
       </nav>
     </header>
   )

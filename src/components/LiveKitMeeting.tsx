@@ -49,7 +49,8 @@ export default function LiveKitMeeting({
       onError={(err) => {
         console.error(err)
       }}
-      className="call-livekit-root"
+      data-lk-theme="default"
+      className="call-livekit-root flex h-dvh min-h-0 w-full flex-col"
     >
       <RoomAudioRenderer />
       <StartAudio label="Enable consultation audio" />

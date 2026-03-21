@@ -2,14 +2,22 @@ import type { ReactNode } from 'react'
 
 type Props = {
   children: ReactNode
-  /** `call` reserves space for the floating control dock */
-  variant?: 'call' | 'join'
+  /** `call` = card layout with dock padding; `join` = pre-call; `immersive` = full-bleed call (fixed dock) */
+  variant?: 'call' | 'join' | 'immersive'
 }
 
 export default function CallPageShell({
   children,
   variant = 'call',
 }: Props) {
+  if (variant === 'immersive') {
+    return (
+      <div className="call-page-shell--immersive relative flex min-h-0 min-h-dvh w-full flex-1 flex-col">
+        {children}
+      </div>
+    )
+  }
+
   const padding =
     variant === 'join'
       ? 'pb-8 pt-4 sm:pb-10 sm:pt-5'

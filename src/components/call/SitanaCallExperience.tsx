@@ -1,7 +1,7 @@
-import { Chat } from '@livekit/components-react/prefabs'
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import CallHeader from './CallHeader'
 import CallPageShell from './CallPageShell'
+import CallSidePanel, { type SidePanelTab } from './CallSidePanel'
 import DevicePopover from './DevicePopover'
 import FloatingControlsDock from './FloatingControlsDock'
 import LeaveConsultationDialog from './LeaveConsultationDialog'
@@ -18,10 +18,14 @@ export default function SitanaCallExperience({
   selfDisplayName,
   onLeave,
 }: Props) {
+  const videoColumnRef = useRef<HTMLDivElement>(null)
   const [devicePanelKind, setDevicePanelKind] = useState<
     'audioinput' | 'videoinput' | null
   >(null)
-  const [chatOpen, setChatOpen] = useState(false)
+  const [sidePanel, setSidePanel] = useState<{
+    open: boolean
+    tab: SidePanelTab
+  }>({ open: false, tab: 'chat' })
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false)
 
   const openMicDevices = useCallback(() => {
@@ -41,19 +45,50 @@ export default function SitanaCallExperience({
     onLeave()
   }, [onLeave])
 
-  return (
-    <CallPageShell>
-      <CallHeader roomLabel={roomLabel} selfDisplayName={selfDisplayName} />
+  const selectSidePanelTab = useCallback((t: SidePanelTab) => {
+    setSidePanel((s) => {
+      if (s.open && s.tab === t) return { open: false, tab: s.tab }
+      return { open: true, tab: t }
+    })
+  }, [])
 
-      <div className="relative mt-5 sm:mt-6">
-        <VideoStage />
-        <FloatingControlsDock
-          onLeave={handleLeaveClick}
-          onOpenMicDevices={openMicDevices}
-          onOpenCameraDevices={openCameraDevices}
-          chatOpen={chatOpen}
-          onChatToggle={() => setChatOpen((o) => !o)}
-        />
+  return (
+    <CallPageShell variant="immersive">
+      <div
+        className="flex h-dvh min-h-0 w-full flex-1 flex-row overflow-hidden"
+        dir="ltr"
+      >
+        <div
+          ref={videoColumnRef}
+          className="relative min-h-0 min-w-0 flex-1"
+        >
+          <VideoStage immersive />
+          <CallHeader
+            variant="overlay"
+            roomLabel={roomLabel}
+            selfDisplayName={selfDisplayName}
+          />
+          <FloatingControlsDock
+            dockBoundsRef={videoColumnRef}
+            onLeave={handleLeaveClick}
+            onOpenMicDevices={openMicDevices}
+            onOpenCameraDevices={openCameraDevices}
+            sidePanelOpen={sidePanel.open}
+            sidePanelTab={sidePanel.tab}
+            onSelectSidePanelTab={selectSidePanelTab}
+          />
+        </div>
+
+        {sidePanel.open ? (
+          <CallSidePanel
+            tab={sidePanel.tab}
+            onTabChange={(tab) => setSidePanel((s) => ({ ...s, tab }))}
+            onClose={() => setSidePanel((s) => ({ ...s, open: false }))}
+            onOpenMicDevices={openMicDevices}
+            onOpenCameraDevices={openCameraDevices}
+            className="h-dvh min-h-0 w-[min(24rem,calc(100vw-6rem))] min-w-[16rem] shrink-0 border-l border-slate-700/90 sm:min-w-[18rem]"
+          />
+        ) : null}
       </div>
 
       {devicePanelKind ? (
@@ -64,7 +99,7 @@ export default function SitanaCallExperience({
             aria-label="Close device list"
             onClick={() => setDevicePanelKind(null)}
           />
-          <div className="fixed bottom-[max(6rem,18%)] left-1/2 z-[70] w-[min(calc(100vw-1.5rem),20rem)] -translate-x-1/2 sm:bottom-[7.5rem]">
+          <div className="fixed bottom-[max(8rem,28vh)] left-1/2 z-[70] w-[min(calc(100vw-1.5rem),20rem)] -translate-x-1/2 sm:bottom-[32vh]">
             <DevicePopover kind={devicePanelKind} />
           </div>
         </>
@@ -75,34 +110,6 @@ export default function SitanaCallExperience({
         onCancel={() => setLeaveDialogOpen(false)}
         onConfirm={handleConfirmLeave}
       />
-
-      {chatOpen ? (
-        <>
-          <button
-            type="button"
-            className="fixed inset-0 z-[60] bg-slate-900/25 backdrop-blur-[2px]"
-            aria-label="Close chat"
-            onClick={() => setChatOpen(false)}
-          />
-          <aside className="fixed inset-y-0 right-0 z-[70] flex w-full max-w-sm flex-col border-l border-slate-200/90 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-            <div className="flex items-center justify-between border-b border-slate-200/90 px-4 py-3 dark:border-slate-700">
-              <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                Consultation chat
-              </h2>
-              <button
-                type="button"
-                onClick={() => setChatOpen(false)}
-                className="rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-              >
-                Close
-              </button>
-            </div>
-            <div className="min-h-0 flex-1 overflow-hidden p-2">
-              <Chat className="lk-chat-custom flex h-full min-h-[200px] flex-col rounded-lg border border-slate-200/80 bg-slate-50/80 dark:border-slate-700 dark:bg-slate-800/50" />
-            </div>
-          </aside>
-        </>
-      ) : null}
     </CallPageShell>
   )
 }

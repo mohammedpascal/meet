@@ -112,7 +112,7 @@ function MeetPage() {
     <main
       className={
         session
-          ? 'page-wrap min-h-screen px-4 pb-10 pt-6'
+          ? 'call-main-immersive fixed inset-0 z-[1] m-0 min-h-0 w-full max-w-none overflow-hidden p-0'
           : 'join-page min-h-screen px-0 pb-8 pt-4 sm:pt-6'
       }
     >
