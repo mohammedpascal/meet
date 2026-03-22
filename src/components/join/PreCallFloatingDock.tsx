@@ -1,25 +1,19 @@
-import { useTrackToggle } from '@livekit/components-react'
-import { Track } from 'livekit-client'
 import {
   ChevronUp,
   GripVertical,
-  MessageSquare,
+  Loader2,
   Mic,
   MicOff,
-  MonitorUp,
-  Settings,
-  Users,
+  Phone,
   Video,
   VideoOff,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import {
   clampDockOffsetPure,
   dockBtn,
-  dockBtnOff,
-  dockScreenLkActive,
-  dockScreenLkIdle,
   DRAG_THRESHOLD_PX,
   splitChevronBtn,
   splitChevronBtnOff,
@@ -27,65 +21,41 @@ import {
   splitWrapOff,
   splitWrapOn,
   VIEW_MARGIN,
-} from './floating-dock-primitives'
-import type { SidePanelTab } from './CallSidePanel'
-import LeaveCallButton from './LeaveCallButton'
+} from '../call/floating-dock-primitives'
 
-type MediaToggleSource =
-  | typeof Track.Source.Microphone
-  | typeof Track.Source.Camera
-
-type ToggleProps = {
-  source: MediaToggleSource
-  labelOn: string
-  labelOff: string
-  IconOn: typeof Mic
-  IconOff: typeof MicOff
-  onOpenDeviceList?: () => void
-  deviceListLabel: string
-}
-
-function MediaToggle({
-  source,
+function PrecallMediaToggle({
+  enabled,
   labelOn,
   labelOff,
   IconOn,
   IconOff,
+  onToggle,
   onOpenDeviceList,
   deviceListLabel,
-}: ToggleProps) {
-  const { buttonProps, enabled, pending } = useTrackToggle({ source })
+  disabled,
+}: {
+  enabled: boolean
+  labelOn: string
+  labelOff: string
+  IconOn: LucideIcon
+  IconOff: LucideIcon
+  onToggle: () => void
+  onOpenDeviceList: () => void
+  deviceListLabel: string
+  disabled: boolean
+}) {
   const off = !enabled
   const label = off ? labelOff : labelOn
-
-  if (!onOpenDeviceList) {
-    return (
-      <button
-        type="button"
-        {...buttonProps}
-        disabled={pending || buttonProps.disabled}
-        aria-label={label}
-        title={label}
-        className={`${dockBtn} ${off ? dockBtnOff : ''} ${buttonProps.className ?? ''}`}
-      >
-        {off ? (
-          <IconOff className="h-5 w-5" aria-hidden />
-        ) : (
-          <IconOn className="h-5 w-5" aria-hidden />
-        )}
-      </button>
-    )
-  }
 
   return (
     <div className={off ? splitWrapOff : splitWrapOn}>
       <button
         type="button"
-        {...buttonProps}
-        disabled={pending || buttonProps.disabled}
+        disabled={disabled}
+        onClick={onToggle}
         aria-label={label}
         title={label}
-        className={`${splitMainBtn} ${buttonProps.className ?? ''}`}
+        className={splitMainBtn}
       >
         {off ? (
           <IconOff className="h-5 w-5" aria-hidden />
@@ -95,6 +65,7 @@ function MediaToggle({
       </button>
       <button
         type="button"
+        disabled={disabled}
         onClick={onOpenDeviceList}
         className={`${splitChevronBtn} ${off ? splitChevronBtnOff : ''}`}
         aria-label={deviceListLabel}
@@ -107,26 +78,30 @@ function MediaToggle({
 }
 
 type Props = {
-  onLeave: () => void
+  dockBoundsRef: RefObject<HTMLElement | null>
+  audioEnabled: boolean
+  videoEnabled: boolean
+  onToggleAudio: () => void
+  onToggleVideo: () => void
+  mediaDisabled: boolean
   onOpenMicDevices: () => void
   onOpenCameraDevices: () => void
-  /** Video column; dock clamps and positions within this rect */
-  dockBoundsRef: RefObject<HTMLElement | null>
-  sidePanelOpen: boolean
-  sidePanelTab: SidePanelTab
-  onSelectSidePanelTab: (tab: SidePanelTab) => void
+  joinDisabled: boolean
+  joining: boolean
 }
 
-export default function FloatingControlsDock({
-  onLeave,
+export default function PreCallFloatingDock({
+  dockBoundsRef,
+  audioEnabled,
+  videoEnabled,
+  onToggleAudio,
+  onToggleVideo,
+  mediaDisabled,
   onOpenMicDevices,
   onOpenCameraDevices,
-  dockBoundsRef,
-  sidePanelOpen,
-  sidePanelTab,
-  onSelectSidePanelTab,
+  joinDisabled,
+  joining,
 }: Props) {
-  const screen = useTrackToggle({ source: Track.Source.ScreenShare })
   const [offset, setOffset] = useState({ x: 0, y: 0 })
   const [collapsed, setCollapsed] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
@@ -180,7 +155,7 @@ export default function FloatingControlsDock({
 
   useEffect(() => {
     reclamp()
-  }, [sidePanelOpen, reclamp])
+  }, [reclamp])
 
   useEffect(() => {
     if (!collapsed) reclamp()
@@ -261,21 +236,14 @@ export default function FloatingControlsDock({
     if (!didDrag) setCollapsed(true)
   }
 
-  const panelActive = (tab: SidePanelTab) =>
-    sidePanelOpen && sidePanelTab === tab
-
   if (collapsed) {
     return (
       <button
         type="button"
         onClick={() => setCollapsed(false)}
-        className={`pointer-events-auto fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-30 ${dockBtn} ${
-          sidePanelOpen
-            ? 'right-[calc(1rem+min(24rem,calc(100vw-6rem)))]'
-            : 'right-4'
-        }`}
-        aria-label="Show call controls"
-        title="Show call controls"
+        className={`pointer-events-auto fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] right-4 z-30 ${dockBtn}`}
+        aria-label="Show join controls"
+        title="Show join controls"
       >
         <GripVertical className="h-5 w-5 text-slate-400 dark:text-slate-500" aria-hidden />
       </button>
@@ -299,7 +267,7 @@ export default function FloatingControlsDock({
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
           className="flex h-auto shrink-0 cursor-grab touch-none flex-col items-center justify-center self-stretch border-r border-slate-200/80 bg-white/90 px-2 text-slate-400 active:cursor-grabbing dark:border-slate-600/80 dark:bg-slate-800/90 dark:text-slate-500"
-          aria-label="Drag to move or tap to hide call controls"
+          aria-label="Drag to move or tap to hide join controls"
           title="Drag to move; tap to hide"
         >
           <GripVertical className="h-5 w-5" aria-hidden />
@@ -307,26 +275,30 @@ export default function FloatingControlsDock({
         <div
           className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-4"
           role="toolbar"
-          aria-label="Call controls"
+          aria-label="Join controls"
         >
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-            <MediaToggle
-              source={Track.Source.Microphone}
+            <PrecallMediaToggle
+              enabled={audioEnabled}
               labelOn="Mute microphone"
               labelOff="Unmute microphone"
               IconOn={Mic}
               IconOff={MicOff}
+              onToggle={onToggleAudio}
               onOpenDeviceList={onOpenMicDevices}
               deviceListLabel="Choose microphone"
+              disabled={mediaDisabled}
             />
-            <MediaToggle
-              source={Track.Source.Camera}
+            <PrecallMediaToggle
+              enabled={videoEnabled}
               labelOn="Turn camera off"
               labelOff="Turn camera on"
               IconOn={Video}
               IconOff={VideoOff}
+              onToggle={onToggleVideo}
               onOpenDeviceList={onOpenCameraDevices}
               deviceListLabel="Choose camera"
+              disabled={mediaDisabled}
             />
           </div>
 
@@ -335,62 +307,25 @@ export default function FloatingControlsDock({
             aria-hidden
           />
 
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-            <button
-              type="button"
-              {...screen.buttonProps}
-              disabled={screen.pending || screen.buttonProps.disabled}
-              aria-label={
-                screen.enabled ? 'Stop screen sharing' : 'Share screen'
-              }
-              title={screen.enabled ? 'Stop sharing' : 'Share screen'}
-              className={`${dockBtn} ${screen.enabled ? dockScreenLkActive : dockScreenLkIdle} ${screen.buttonProps.className ?? ''}`}
-            >
-              <MonitorUp className="h-5 w-5" aria-hidden />
-            </button>
-            <button
-              type="button"
-              onClick={() => onSelectSidePanelTab('chat')}
-              aria-label={panelActive('chat') ? 'Close chat panel' : 'Open chat'}
-              title="Chat"
-              className={`${dockBtn} ${panelActive('chat') ? 'border-teal-200 bg-teal-50 text-teal-900 dark:border-teal-800 dark:bg-teal-950/50 dark:text-teal-100' : ''} !rounded-xl`}
-            >
-              <MessageSquare className="h-5 w-5" aria-hidden />
-            </button>
-            <button
-              type="button"
-              onClick={() => onSelectSidePanelTab('participants')}
-              aria-label={
-                panelActive('participants')
-                  ? 'Close participants panel'
-                  : 'Open participants'
-              }
-              title="Participants"
-              className={`${dockBtn} ${panelActive('participants') ? 'border-teal-200 bg-teal-50 text-teal-900 dark:border-teal-800 dark:bg-teal-950/50 dark:text-teal-100' : ''} !rounded-xl`}
-            >
-              <Users className="h-5 w-5" aria-hidden />
-            </button>
-            <button
-              type="button"
-              onClick={() => onSelectSidePanelTab('settings')}
-              aria-label={
-                panelActive('settings')
-                  ? 'Close settings panel'
-                  : 'Open settings'
-              }
-              title="Settings"
-              className={`${dockBtn} ${panelActive('settings') ? 'border-teal-200 bg-teal-50 text-teal-900 dark:border-teal-800 dark:bg-teal-950/50 dark:text-teal-100' : ''} !rounded-xl`}
-            >
-              <Settings className="h-5 w-5" aria-hidden />
-            </button>
-          </div>
-
-          <div
-            className="hidden h-8 w-px bg-slate-200 dark:bg-slate-600 sm:block"
-            aria-hidden
-          />
-
-          <LeaveCallButton onLeave={onLeave} className="shrink-0" />
+          <button
+            type="submit"
+            disabled={joinDisabled || joining}
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm ring-1 ring-rose-700/20 transition hover:bg-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 dark:ring-rose-900/40 dark:focus-visible:ring-offset-slate-900"
+            aria-label={joining ? 'Joining' : 'Join the call'}
+            title={joining ? 'Joining…' : 'Join the call'}
+          >
+            {joining ? (
+              <>
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
+                <span className="hidden sm:inline">Joining…</span>
+              </>
+            ) : (
+              <>
+                <Phone className="h-4 w-4 shrink-0" aria-hidden />
+                <span className="hidden sm:inline">Join</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>

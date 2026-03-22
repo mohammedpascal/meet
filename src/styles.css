@@ -112,6 +112,11 @@ main.join-page {
     var(--page-bg);
 }
 
+/* Fullscreen prejoin: dark base behind full-bleed camera */
+main.join-page.join-page--immersive {
+  background: var(--page-bg);
+}
+
 a {
   color: var(--lagoon-deep);
   text-decoration-color: rgba(50, 143, 151, 0.4);

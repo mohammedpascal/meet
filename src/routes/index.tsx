@@ -40,6 +40,7 @@ function MeetPage() {
     audioEnabled,
     setVideoEnabled,
     setAudioEnabled,
+    replaceInputDevice,
   } = usePreviewMedia(session === null)
 
   const join = useCallback(
@@ -113,7 +114,7 @@ function MeetPage() {
       className={
         session
           ? 'call-main-immersive fixed inset-0 z-[1] m-0 min-h-0 w-full max-w-none overflow-hidden p-0'
-          : 'join-page min-h-screen px-0 pb-8 pt-4 sm:pt-6'
+          : 'join-page join-page--immersive fixed inset-0 z-[1] m-0 min-h-0 w-full max-w-none overflow-hidden p-0'
       }
     >
       {!session ? (
@@ -133,6 +134,7 @@ function MeetPage() {
             joinDisabled={!room.trim() || !name.trim()}
             joining={busy}
             error={error}
+            replaceInputDevice={replaceInputDevice}
           />
         </JoinPageShell>
       ) : (

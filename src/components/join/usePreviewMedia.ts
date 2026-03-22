@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+export type PreviewInputKind = 'audioinput' | 'videoinput'
 
 /**
  * Preview stream for the join screen. When `acquire` is false (e.g. user is in
@@ -10,6 +12,8 @@ export function usePreviewMedia(acquire: boolean) {
   const [permissionDenied, setPermissionDenied] = useState(false)
   const [videoEnabled, setVideoEnabled] = useState(true)
   const [audioEnabled, setAudioEnabled] = useState(true)
+  const streamRef = useRef<MediaStream | null>(null)
+  streamRef.current = stream
 
   useEffect(() => {
     if (!acquire) {
@@ -61,6 +65,38 @@ export function usePreviewMedia(acquire: boolean) {
     })
   }, [stream, audioEnabled])
 
+  const replaceInputDevice = useCallback(
+    async (kind: PreviewInputKind, deviceId: string) => {
+      const prev = streamRef.current
+      if (!prev) return
+
+      const videoTrack = prev.getVideoTracks()[0]
+      const audioTrack = prev.getAudioTracks()[0]
+      const vId = videoTrack?.getSettings().deviceId
+      const aId = audioTrack?.getSettings().deviceId
+
+      const constraints: MediaStreamConstraints =
+        kind === 'videoinput'
+          ? {
+              video: { deviceId: { exact: deviceId } },
+              audio: aId ? { deviceId: { exact: aId } } : true,
+            }
+          : {
+              audio: { deviceId: { exact: deviceId } },
+              video: vId ? { deviceId: { exact: vId } } : true,
+            }
+
+      try {
+        const next = await navigator.mediaDevices.getUserMedia(constraints)
+        prev.getTracks().forEach((t) => t.stop())
+        setStream(next)
+      } catch {
+        /* keep existing stream */
+      }
+    },
+    [],
+  )
+
   return {
     stream,
     permissionDenied,
@@ -68,5 +104,6 @@ export function usePreviewMedia(acquire: boolean) {
     audioEnabled,
     setVideoEnabled,
     setAudioEnabled,
+    replaceInputDevice,
   }
 }
