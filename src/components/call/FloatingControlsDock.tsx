@@ -2,7 +2,7 @@ import { useTrackToggle } from '@livekit/components-react'
 import { Track } from 'livekit-client'
 import {
   ChevronUp,
-  GripHorizontal,
+  GripVertical,
   MessageSquare,
   Mic,
   MicOff,
@@ -18,6 +18,8 @@ import type { SidePanelTab } from './CallSidePanel'
 import LeaveCallButton from './LeaveCallButton'
 
 const VIEW_MARGIN = 8
+/** Movement past this (px) counts as drag; below is treated as tap (collapse). */
+const DRAG_THRESHOLD_PX = 8
 
 /**
  * Clamp translate offset without touching DOM. `rectAtRef` must be
@@ -194,6 +196,7 @@ export default function FloatingControlsDock({
 }: Props) {
   const screen = useTrackToggle({ source: Track.Source.ScreenShare })
   const [offset, setOffset] = useState({ x: 0, y: 0 })
+  const [collapsed, setCollapsed] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const offsetRef = useRef(offset)
@@ -206,6 +209,7 @@ export default function FloatingControlsDock({
     ox: number
     oy: number
     rect: DOMRect
+    dragStarted: boolean
   } | null>(null)
 
   const dragRafRef = useRef<number | null>(null)
@@ -246,6 +250,10 @@ export default function FloatingControlsDock({
     reclamp()
   }, [sidePanelOpen, reclamp])
 
+  useEffect(() => {
+    if (!collapsed) reclamp()
+  }, [collapsed, reclamp])
+
   useEffect(
     () => () => {
       if (dragRafRef.current != null) {
@@ -270,14 +278,20 @@ export default function FloatingControlsDock({
       ox,
       oy,
       rect: el.getBoundingClientRect(),
+      dragStarted: false,
     }
     pendingOffsetRef.current = null
-    setIsDragging(true)
   }
 
   const onHandlePointerMove = (e: React.PointerEvent) => {
     const d = dragRef.current
     if (!d || e.pointerId !== d.pointerId) return
+    if (!d.dragStarted) {
+      const dist = Math.hypot(e.clientX - d.startX, e.clientY - d.startY)
+      if (dist < DRAG_THRESHOLD_PX) return
+      d.dragStarted = true
+      setIsDragging(true)
+    }
     const nx = d.ox + (e.clientX - d.startX)
     const ny = d.oy + (e.clientY - d.startY)
     const clamped = clampDockOffsetPure(
@@ -296,6 +310,7 @@ export default function FloatingControlsDock({
   const endDrag = (e: React.PointerEvent) => {
     const d = dragRef.current
     if (!d || e.pointerId !== d.pointerId) return
+    const didDrag = d.dragStarted
     try {
       e.currentTarget.releasePointerCapture(e.pointerId)
     } catch {
@@ -311,10 +326,29 @@ export default function FloatingControlsDock({
     const p = pendingOffsetRef.current
     pendingOffsetRef.current = null
     if (p) setOffset(p)
+    if (!didDrag) setCollapsed(true)
   }
 
   const panelActive = (tab: SidePanelTab) =>
     sidePanelOpen && sidePanelTab === tab
+
+  if (collapsed) {
+    return (
+      <button
+        type="button"
+        onClick={() => setCollapsed(false)}
+        className={`pointer-events-auto fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-30 ${dockBtn} ${
+          sidePanelOpen
+            ? 'right-[calc(1rem+min(24rem,calc(100vw-6rem)))]'
+            : 'right-4'
+        }`}
+        aria-label="Show call controls"
+        title="Show call controls"
+      >
+        <GripVertical className="h-5 w-5 text-slate-400 dark:text-slate-500" aria-hidden />
+      </button>
+    )
+  }
 
   return (
     <div
@@ -325,21 +359,21 @@ export default function FloatingControlsDock({
         transform: `translate(calc(-50% + ${offset.x}px), ${offset.y}px)`,
       }}
     >
-      <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 shadow-[0_20px_50px_-12px_rgba(15,23,42,0.38)] ring-1 ring-black/[0.06] backdrop-blur-md dark:border-slate-600/90 dark:bg-slate-900/95 dark:ring-white/[0.08]">
+      <div className="flex flex-row overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 shadow-[0_20px_50px_-12px_rgba(15,23,42,0.38)] ring-1 ring-black/[0.06] backdrop-blur-md dark:border-slate-600/90 dark:bg-slate-900/95 dark:ring-white/[0.08]">
         <button
           type="button"
           onPointerDown={onHandlePointerDown}
           onPointerMove={onHandlePointerMove}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
-          className="flex w-full cursor-grab touch-none items-center justify-center border-b border-slate-200/80 bg-white/90 py-2 text-slate-400 active:cursor-grabbing dark:border-slate-600/80 dark:bg-slate-800/90 dark:text-slate-500"
-          aria-label="Drag to move call controls"
-          title="Drag to move"
+          className="flex h-auto shrink-0 cursor-grab touch-none flex-col items-center justify-center self-stretch border-r border-slate-200/80 bg-white/90 px-2 text-slate-400 active:cursor-grabbing dark:border-slate-600/80 dark:bg-slate-800/90 dark:text-slate-500"
+          aria-label="Drag to move or tap to hide call controls"
+          title="Drag to move; tap to hide"
         >
-          <GripHorizontal className="h-5 w-5" aria-hidden />
+          <GripVertical className="h-5 w-5" aria-hidden />
         </button>
         <div
-          className="flex flex-wrap items-center justify-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-4"
+          className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-4"
           role="toolbar"
           aria-label="Call controls"
         >

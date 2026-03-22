@@ -46,9 +46,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           {children}
           <Footer />
         </CallUiProvider>
+        {false && 
         <TanStackDevtools
           config={{
-            position: 'bottom-right',
+            position: 'bottom-left',
           }}
           plugins={[
             {
@@ -56,7 +57,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               render: <TanStackRouterDevtoolsPanel />,
             },
           ]}
-        />
+        />}
         <Scripts />
       </body>
     </html>

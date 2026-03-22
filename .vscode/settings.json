@@ -7,5 +7,12 @@
   },
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
+  },
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#243206",
+    "titleBar.activeBackground": "#324609",
+    "titleBar.activeForeground": "#F6FCE9",
+    "titleBar.inactiveBackground": "#243206",
+    "titleBar.inactiveForeground": "#F6FCE9"
   }
 }
