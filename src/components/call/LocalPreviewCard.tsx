@@ -45,8 +45,8 @@ export default function LocalPreviewCard() {
           </div>
         )}
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 pt-6">
-          <div className="flex flex-wrap items-end gap-1.5">
-            <p className="min-w-0 flex-1 text-[11px] font-normal tracking-tight text-white/95">
+          <div className="inline-flex max-w-full min-w-0 items-center gap-1.5">
+            <p className="m-0 min-w-0 truncate text-[11px] font-normal leading-none tracking-tight text-white/95">
               {displayName}
             </p>
             <span

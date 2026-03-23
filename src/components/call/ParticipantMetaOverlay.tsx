@@ -27,12 +27,12 @@ export default function ParticipantMetaOverlay({
           'linear-gradient(to top, rgba(15,23,42,0.82) 0%, rgba(15,23,42,0.45) 45%, transparent 100%)',
       }}
     >
-      <div className="flex flex-wrap items-end gap-2">
-        <p className="text-base font-normal tracking-tight text-white/95 drop-shadow-sm sm:text-lg">
+      <div className="inline-flex max-w-full min-w-0 items-center gap-2">
+        <p className="m-0 min-w-0 truncate text-base font-normal leading-none tracking-tight text-white/95 drop-shadow-sm sm:text-lg sm:leading-none">
           {display}
         </p>
         <span
-          className="inline-flex items-center gap-1.5"
+          className="inline-flex shrink-0 items-center gap-1.5"
           aria-label={`Microphone ${microphoneEnabled ? 'on' : 'muted'}, camera ${cameraEnabled ? 'on' : 'off'}`}
         >
           <MicIcon
