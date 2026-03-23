@@ -8,21 +8,10 @@ import { ConnectionState } from 'livekit-client'
 import { useEffect, useState, type ReactNode } from 'react'
 import CallEmptyState from './CallEmptyState'
 import CallOverlayPill from './CallOverlayPill'
-import CallStatusBadge from './CallStatusBadge'
+import ConnectionPresenceBadge from './ConnectionPresenceBadge'
 import { formatElapsed } from './call-utils'
 import LocalPreviewCard from './LocalPreviewCard'
 import RemoteParticipantView from './RemoteParticipantView'
-
-function videoStatusKind(
-  conn: ConnectionState,
-  remoteCount: number,
-): 'connected' | 'connecting' | 'waiting' | 'reconnecting' | 'disconnected' {
-  if (conn === ConnectionState.Disconnected) return 'disconnected'
-  if (conn === ConnectionState.Connecting) return 'connecting'
-  if (conn === ConnectionState.Reconnecting) return 'reconnecting'
-  if (remoteCount === 0) return 'waiting'
-  return 'connected'
-}
 
 type Props = {
   /** Full viewport video (in-call immersive layout) */
@@ -49,10 +38,6 @@ export default function VideoStage({ immersive = false }: Props) {
     }, 1000)
     return () => window.clearInterval(id)
   }, [conn])
-
-  const badgeKind = videoStatusKind(conn, remotes.length)
-  const n = participants.length
-  const participantLabel = `${n} ${n === 1 ? 'participant' : 'participants'}`
 
   let body: ReactNode
   if (conn === ConnectionState.Disconnected) {
@@ -92,11 +77,14 @@ export default function VideoStage({ immersive = false }: Props) {
         aria-hidden
       />
       <div className={`absolute ${badgeTop} flex flex-wrap items-start gap-2`}>
-        <CallStatusBadge kind={badgeKind} />
-        <CallOverlayPill dotClassName="bg-violet-400 shadow-[0_0_0_3px_rgba(167,139,250,0.22)]">
-          {participantLabel}
-        </CallOverlayPill>
-        <CallOverlayPill dotClassName="bg-amber-400/95">
+        <ConnectionPresenceBadge
+          connection={conn}
+          participantCount={participants.length}
+        />
+        <CallOverlayPill
+          showDot={false}
+          aria-label={`Call duration ${formatElapsed(elapsedSec)}`}
+        >
           {formatElapsed(elapsedSec)}
         </CallOverlayPill>
       </div>
