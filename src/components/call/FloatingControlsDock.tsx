@@ -284,10 +284,14 @@ export default function FloatingControlsDock({
           className="flex h-auto shrink-0 cursor-grab touch-none flex-col items-center justify-center self-stretch border-r border-white/20 bg-white/20 px-2 text-white/65 backdrop-blur-sm active:cursor-grabbing"
           aria-label={
             collapsed
-              ? 'Drag to move or tap to show call controls'
-              : 'Drag to move or tap to hide call controls'
+              ? 'Drag to move or tap to expand mic, camera, and other controls'
+              : 'Drag to move or tap to collapse to handle and leave only'
           }
-          title={collapsed ? 'Drag to move; tap to show' : 'Drag to move; tap to hide'}
+          title={
+            collapsed
+              ? 'Drag to move; tap for full controls'
+              : 'Drag to move; tap to collapse'
+          }
         >
           <GripVertical className="h-5 w-5" aria-hidden />
         </button>
@@ -378,17 +382,14 @@ export default function FloatingControlsDock({
             </button>
             </div>
 
-            <div
-              className="hidden h-8 w-px bg-white/20 sm:block"
-              aria-hidden
-            />
-
-            <LeaveCallButton
-              onLeave={onLeave}
-              variant="glass"
-              className="shrink-0"
-            />
           </div>
+        </div>
+        <div className="flex shrink-0 items-center self-stretch border-l border-white/20 px-2.5 py-2 sm:px-3 sm:py-2.5">
+          <LeaveCallButton
+            onLeave={onLeave}
+            variant="glass"
+            className="shrink-0"
+          />
         </div>
       </div>
     </div>
