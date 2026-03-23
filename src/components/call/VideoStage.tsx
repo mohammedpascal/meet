@@ -83,9 +83,7 @@ export default function VideoStage({ immersive = false }: Props) {
         maxHeight: 'min(68vh, calc(100vh - 14rem))',
       }
 
-  const badgeTop = immersive
-    ? 'left-3 top-20 z-[22] sm:left-4 sm:top-24'
-    : 'left-3 top-3 z-[22] sm:left-4 sm:top-4'
+  const badgeTop = 'left-3 top-3 z-[22] sm:left-4 sm:top-4'
 
   return (
     <div className={shellClass} style={shellStyle}>
@@ -93,7 +91,7 @@ export default function VideoStage({ immersive = false }: Props) {
         className="pointer-events-none absolute inset-x-0 top-0 z-[18] h-28 bg-gradient-to-b from-black/50 via-black/20 to-transparent"
         aria-hidden
       />
-      <div className={`absolute ${badgeTop} flex flex-wrap items-center gap-2`}>
+      <div className={`absolute ${badgeTop} flex flex-wrap items-start gap-2`}>
         <CallStatusBadge kind={badgeKind} />
         <CallOverlayPill dotClassName="bg-violet-400 shadow-[0_0_0_3px_rgba(167,139,250,0.22)]">
           {participantLabel}
@@ -106,7 +104,7 @@ export default function VideoStage({ immersive = false }: Props) {
       <div className="relative h-full w-full">{body}</div>
 
       {showLocalPip ? (
-        <LocalPreviewCard topOffset={immersive ? 'below-header' : 'default'} />
+        <LocalPreviewCard />
       ) : null}
     </div>
   )

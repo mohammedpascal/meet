@@ -138,8 +138,6 @@ function MeetPage() {
         <LiveKitMeeting
           token={session.token}
           serverUrl={session.serverUrl}
-          roomLabel={room}
-          selfDisplayName={name}
           connectMic={session.connectMic}
           connectCam={session.connectCam}
           onLeave={leave}

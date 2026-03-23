@@ -1,5 +1,4 @@
 import { useCallback, useRef, useState } from 'react'
-import CallHeader from './CallHeader'
 import CallPageShell from './CallPageShell'
 import CallSidePanel, { type SidePanelTab } from './CallSidePanel'
 import DevicePopover from './DevicePopover'
@@ -8,16 +7,10 @@ import LeaveCallDialog from './LeaveCallDialog'
 import VideoStage from './VideoStage'
 
 type Props = {
-  roomLabel: string
-  selfDisplayName: string
   onLeave: () => void
 }
 
-export default function SitanaCallExperience({
-  roomLabel,
-  selfDisplayName,
-  onLeave,
-}: Props) {
+export default function SitanaCallExperience({ onLeave }: Props) {
   const videoColumnRef = useRef<HTMLDivElement>(null)
   const [devicePanelKind, setDevicePanelKind] = useState<
     'audioinput' | 'videoinput' | null
@@ -63,11 +56,6 @@ export default function SitanaCallExperience({
           className="relative min-h-0 min-w-0 flex-1"
         >
           <VideoStage immersive />
-          <CallHeader
-            variant="overlay"
-            roomLabel={roomLabel}
-            selfDisplayName={selfDisplayName}
-          />
           <FloatingControlsDock
             dockBoundsRef={videoColumnRef}
             onLeave={handleLeaveClick}

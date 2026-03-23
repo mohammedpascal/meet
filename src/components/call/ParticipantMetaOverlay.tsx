@@ -1,16 +1,24 @@
+import { Mic, MicOff, Video, VideoOff } from 'lucide-react'
+
 type Props = {
   name: string
-  role: string
-  muted?: boolean
+  microphoneEnabled: boolean
+  cameraEnabled: boolean
   className?: string
 }
 
 export default function ParticipantMetaOverlay({
   name,
-  role,
-  muted,
+  microphoneEnabled,
+  cameraEnabled,
   className = '',
 }: Props) {
+  const display = name.trim() || 'Participant'
+  const MicIcon = microphoneEnabled ? Mic : MicOff
+  const CamIcon = cameraEnabled ? Video : VideoOff
+  const onClass = 'text-emerald-400'
+  const offClass = 'text-red-400'
+
   return (
     <div
       className={`pointer-events-none absolute bottom-0 left-0 right-0 z-[15] px-4 pb-4 pt-16 ${className}`}
@@ -20,19 +28,24 @@ export default function ParticipantMetaOverlay({
       }}
     >
       <div className="flex flex-wrap items-end gap-2">
-        <div>
-          <p className="text-lg font-semibold tracking-tight text-white drop-shadow-sm sm:text-xl">
-            {name || 'Participant'}
-          </p>
-          <p className="mt-0.5 text-xs font-medium uppercase tracking-wider text-white/60">
-            {role}
-          </p>
-        </div>
-        {muted ? (
-          <span className="rounded-md bg-black/35 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white/90 ring-1 ring-white/20">
-            Muted
-          </span>
-        ) : null}
+        <p className="text-base font-normal tracking-tight text-white/95 drop-shadow-sm sm:text-lg">
+          {display}
+        </p>
+        <span
+          className="inline-flex items-center gap-1.5"
+          aria-label={`Microphone ${microphoneEnabled ? 'on' : 'muted'}, camera ${cameraEnabled ? 'on' : 'off'}`}
+        >
+          <MicIcon
+            className={`h-4 w-4 shrink-0 ${microphoneEnabled ? onClass : offClass}`}
+            strokeWidth={2}
+            aria-hidden
+          />
+          <CamIcon
+            className={`h-4 w-4 shrink-0 ${cameraEnabled ? onClass : offClass}`}
+            strokeWidth={2}
+            aria-hidden
+          />
+        </span>
       </div>
     </div>
   )

@@ -3,16 +3,14 @@ import { VideoTrack } from '@livekit/components-react'
 import { useLocalParticipant } from '@livekit/components-react'
 import { useParticipantTracks } from '@livekit/components-react'
 import { Track } from 'livekit-client'
-import { VideoOff } from 'lucide-react'
+import { Mic, MicOff, Video, VideoOff } from 'lucide-react'
 
-type Props = {
-  topOffset?: 'default' | 'below-header'
-}
-
-export default function LocalPreviewCard({
-  topOffset = 'default',
-}: Props) {
-  const { localParticipant, isCameraEnabled } = useLocalParticipant()
+export default function LocalPreviewCard() {
+  const {
+    localParticipant,
+    isMicrophoneEnabled,
+    isCameraEnabled,
+  } = useLocalParticipant()
   const tracks = useParticipantTracks([Track.Source.Camera], {
     participantIdentity: localParticipant.identity,
   })
@@ -22,14 +20,14 @@ export default function LocalPreviewCard({
     localParticipant.identity ||
     'Participant'
 
-  const topClass =
-    topOffset === 'below-header'
-      ? 'right-3 top-20 z-20 sm:right-4 sm:top-24'
-      : 'right-3 top-3 z-20 sm:right-4 sm:top-4'
+  const MicIcon = isMicrophoneEnabled ? Mic : MicOff
+  const CamIcon = isCameraEnabled ? Video : VideoOff
+  const onClass = 'text-emerald-400'
+  const offClass = 'text-red-400'
 
   return (
     <div
-      className={`absolute w-[28%] min-w-[120px] max-w-[220px] ${topClass}`}
+      className="absolute right-3 top-3 z-20 w-[28%] min-w-[120px] max-w-[220px] sm:right-4 sm:top-4"
       style={{ aspectRatio: '16 / 10' }}
     >
       <div className="relative h-full w-full overflow-hidden rounded-xl bg-slate-950/90 shadow-[0_12px_40px_rgba(0,0,0,0.35)] ring-2 ring-white/25 ring-offset-2 ring-offset-slate-950/0">
@@ -47,9 +45,26 @@ export default function LocalPreviewCard({
           </div>
         )}
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 pt-6">
-          <span className="text-[11px] font-semibold tracking-wide text-white/95">
-            {displayName}
-          </span>
+          <div className="flex flex-wrap items-end gap-1.5">
+            <p className="min-w-0 flex-1 text-[11px] font-normal tracking-tight text-white/95">
+              {displayName}
+            </p>
+            <span
+              className="inline-flex shrink-0 items-center gap-1"
+              aria-label={`Microphone ${isMicrophoneEnabled ? 'on' : 'muted'}, camera ${isCameraEnabled ? 'on' : 'off'}`}
+            >
+              <MicIcon
+                className={`h-3.5 w-3.5 shrink-0 ${isMicrophoneEnabled ? onClass : offClass}`}
+                strokeWidth={2}
+                aria-hidden
+              />
+              <CamIcon
+                className={`h-3.5 w-3.5 shrink-0 ${isCameraEnabled ? onClass : offClass}`}
+                strokeWidth={2}
+                aria-hidden
+              />
+            </span>
+          </div>
         </div>
       </div>
     </div>

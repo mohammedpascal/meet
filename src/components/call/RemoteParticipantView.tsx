@@ -48,8 +48,8 @@ export default function RemoteParticipantView({ participant }: Props) {
         />
         <ParticipantMetaOverlay
           name={displayName}
-          role="Clinician"
-          muted={!participant.isMicrophoneEnabled}
+          microphoneEnabled={participant.isMicrophoneEnabled}
+          cameraEnabled={participant.isCameraEnabled}
           className="z-[25]"
         />
       </div>
@@ -66,8 +66,8 @@ export default function RemoteParticipantView({ participant }: Props) {
       </ParticipantContextIfNeeded>
       <ParticipantMetaOverlay
         name={displayName}
-        role="Clinician"
-        muted={!participant.isMicrophoneEnabled}
+        microphoneEnabled={participant.isMicrophoneEnabled}
+        cameraEnabled={participant.isCameraEnabled}
       />
     </div>
   )

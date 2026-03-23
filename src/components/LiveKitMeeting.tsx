@@ -6,8 +6,6 @@ import SitanaCallExperience from './call/SitanaCallExperience'
 type Props = {
   token: string
   serverUrl: string
-  roomLabel: string
-  selfDisplayName: string
   /** Match pre-call mic toggle: publish microphone when connecting */
   connectMic: boolean
   /** Match pre-call camera toggle: publish camera when connecting */
@@ -18,8 +16,6 @@ type Props = {
 export default function LiveKitMeeting({
   token,
   serverUrl,
-  roomLabel,
-  selfDisplayName,
   connectMic,
   connectCam,
   onLeave,
@@ -54,11 +50,7 @@ export default function LiveKitMeeting({
     >
       <RoomAudioRenderer />
       <StartAudio label="Enable call audio" />
-      <SitanaCallExperience
-        roomLabel={roomLabel}
-        selfDisplayName={selfDisplayName}
-        onLeave={onLeave}
-      />
+      <SitanaCallExperience onLeave={onLeave} />
     </LiveKitRoom>
   )
 }
