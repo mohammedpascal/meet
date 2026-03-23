@@ -51,7 +51,7 @@ export default function CameraStateView({ stream, videoEnabled }: Props) {
           Camera is off
         </p>
         <p className="mt-2 text-sm leading-relaxed text-white/65">
-          Turn on your camera for a clearer, more personal consultation. You can
+          Turn on your camera for a clearer, more personal call. You can
           still join with audio only.
         </p>
       </div>

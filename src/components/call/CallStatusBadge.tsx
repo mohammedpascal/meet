@@ -1,3 +1,5 @@
+import CallOverlayPill from './CallOverlayPill'
+
 type StatusKind =
   | 'connected'
   | 'connecting'
@@ -28,14 +30,8 @@ const dotClass: Record<StatusKind, string> = {
 
 export default function CallStatusBadge({ kind, className = '' }: Props) {
   return (
-    <span
-      className={`inline-flex items-center gap-2 rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium text-white/90 ring-1 ring-white/15 backdrop-blur-sm ${className}`}
-    >
-      <span
-        className={`h-1.5 w-1.5 shrink-0 rounded-full ${dotClass[kind]}`}
-        aria-hidden
-      />
+    <CallOverlayPill dotClassName={dotClass[kind]} className={className}>
       {copy[kind]}
-    </span>
+    </CallOverlayPill>
   )
 }

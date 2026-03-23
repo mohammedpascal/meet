@@ -27,13 +27,13 @@ const defaults: Record<
 > = {
   connecting: {
     title: 'Connecting',
-    description: 'Establishing a secure consultation link…',
+    description: 'Establishing a secure call link…',
     icon: Loader2,
   },
   waiting: {
     title: 'Waiting for participant',
     description:
-      'You are in the consultation room. The other party will join shortly.',
+      'You are in the room. The other party will join shortly.',
     icon: UserRound,
   },
   reconnecting: {

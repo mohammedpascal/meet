@@ -7,7 +7,7 @@ type Props = {
   onConfirm: () => void
 }
 
-export default function LeaveConsultationDialog({
+export default function LeaveCallDialog({
   open,
   onCancel,
   onConfirm,
@@ -71,7 +71,7 @@ export default function LeaveConsultationDialog({
             id={titleId}
             className="text-center text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100"
           >
-            End this consultation?
+            End this call?
           </h2>
           <p
             id={descId}

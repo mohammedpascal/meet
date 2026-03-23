@@ -1,12 +1,10 @@
 import { useCallback, useState } from 'react'
 import type { PreviewInputKind } from './usePreviewMedia'
-import PreCallHeader from './PreCallHeader'
 import PreCallOverlay from './PreCallOverlay'
 import PreCallVideoStage from './PreCallVideoStage'
 import PreviewDevicePopover from './PreviewDevicePopover'
 
 type Props = {
-  roomLabel: string
   stream: MediaStream | null
   videoEnabled: boolean
   audioEnabled: boolean
@@ -23,10 +21,9 @@ type Props = {
 }
 
 /**
- * Pre-call “waiting room”: same structural rhythm as in-call (video column, overlay header, stage).
+ * Pre-call “waiting room”: video column, overlay controls, stage.
  */
 export default function PreCallExperience({
-  roomLabel,
   stream,
   videoEnabled,
   audioEnabled,
@@ -69,7 +66,6 @@ export default function PreCallExperience({
         className="pointer-events-none absolute inset-0 z-5 bg-linear-to-t from-black/45 via-transparent to-black/25"
         aria-hidden
       />
-      <PreCallHeader roomLabel={roomLabel} />
       <PreCallOverlay
         name={name}
         onNameChange={onNameChange}

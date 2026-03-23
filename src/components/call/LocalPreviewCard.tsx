@@ -17,6 +17,10 @@ export default function LocalPreviewCard({
     participantIdentity: localParticipant.identity,
   })
   const cam = tracks[0]
+  const displayName =
+    localParticipant.name?.trim() ||
+    localParticipant.identity ||
+    'Participant'
 
   const topClass =
     topOffset === 'below-header'
@@ -44,10 +48,7 @@ export default function LocalPreviewCard({
         )}
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 pt-6">
           <span className="text-[11px] font-semibold tracking-wide text-white/95">
-            You
-          </span>
-          <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-white/55">
-            · Patient
+            {displayName}
           </span>
         </div>
       </div>

@@ -4,6 +4,8 @@ type Props = {
   onChange: (v: string) => void
   disabled?: boolean
   autoFocus?: boolean
+  /** Accessible name when there is no visible label element */
+  ariaLabel?: string
 }
 
 const field =
@@ -15,6 +17,7 @@ export default function NameInput({
   onChange,
   disabled,
   autoFocus,
+  ariaLabel,
 }: Props) {
   return (
     <input
@@ -26,9 +29,10 @@ export default function NameInput({
       autoFocus={autoFocus}
       className={field}
       autoComplete="name"
-      placeholder="Your full name"
+      placeholder="Your name"
       required
       aria-required
+      aria-label={ariaLabel}
     />
   )
 }

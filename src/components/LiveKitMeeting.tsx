@@ -33,7 +33,7 @@ export default function LiveKitMeeting({
   if (!mounted) {
     return (
       <div className="mx-auto flex min-h-[50vh] max-w-5xl items-center justify-center rounded-2xl border border-slate-200/90 bg-white px-6 py-16 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
-        Preparing secure consultation…
+        Preparing secure call…
       </div>
     )
   }
@@ -53,7 +53,7 @@ export default function LiveKitMeeting({
       className="call-livekit-root flex h-dvh min-h-0 w-full flex-col"
     >
       <RoomAudioRenderer />
-      <StartAudio label="Enable consultation audio" />
+      <StartAudio label="Enable call audio" />
       <SitanaCallExperience
         roomLabel={roomLabel}
         selfDisplayName={selfDisplayName}

@@ -91,7 +91,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Pre-call join: soft vignette + gradient, matches consultation shell tone */
+/* Pre-call join: soft vignette + gradient, matches call/join shell tone */
 main.join-page {
   background:
     radial-gradient(

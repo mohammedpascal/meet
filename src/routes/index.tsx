@@ -119,7 +119,6 @@ function MeetPage() {
       {!session ? (
         <JoinPageShell>
           <PreCallExperience
-            roomLabel={roomFromUrl}
             stream={stream}
             videoEnabled={videoEnabled}
             audioEnabled={audioEnabled}

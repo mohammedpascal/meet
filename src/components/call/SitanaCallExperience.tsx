@@ -4,7 +4,7 @@ import CallPageShell from './CallPageShell'
 import CallSidePanel, { type SidePanelTab } from './CallSidePanel'
 import DevicePopover from './DevicePopover'
 import FloatingControlsDock from './FloatingControlsDock'
-import LeaveConsultationDialog from './LeaveConsultationDialog'
+import LeaveCallDialog from './LeaveCallDialog'
 import VideoStage from './VideoStage'
 
 type Props = {
@@ -105,7 +105,7 @@ export default function SitanaCallExperience({
         </>
       ) : null}
 
-      <LeaveConsultationDialog
+      <LeaveCallDialog
         open={leaveDialogOpen}
         onCancel={() => setLeaveDialogOpen(false)}
         onConfirm={handleConfirmLeave}
