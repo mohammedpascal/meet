@@ -77,3 +77,25 @@ export const dockScreenLkIdle =
 
 export const dockScreenLkActive =
   '!border-teal-200 !bg-teal-50 !text-teal-900 dark:!border-teal-800 dark:!bg-teal-950/50 dark:!text-teal-100'
+
+/** Frosted icon buttons over video (aligned with dock drag handle) */
+export const dockBtnGlass =
+  'inline-flex h-12 w-12 items-center justify-center rounded-xl border border-white/20 bg-white/20 text-white/85 backdrop-blur-sm shadow-sm transition hover:bg-white/28 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/35 disabled:opacity-50'
+
+export const dockBtnGlassOff =
+  'border border-white/20 bg-rose-500/25 text-rose-100 ring-0 hover:bg-rose-500/35'
+
+export const splitWrapGlassOn =
+  'inline-flex overflow-hidden rounded-xl border border-white/20 bg-white/20 text-white/85 backdrop-blur-sm shadow-sm'
+
+export const splitWrapGlassOff =
+  'inline-flex overflow-hidden rounded-xl border border-white/20 bg-rose-500/22 text-rose-100 backdrop-blur-sm shadow-sm ring-0'
+
+export const splitChevronBtnGlass =
+  'inline-flex h-12 w-9 shrink-0 items-center justify-center !rounded-none border-0 border-l border-white/25 !bg-transparent p-0 !text-inherit transition hover:bg-white/15 focus:outline-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:ring-offset-0 disabled:opacity-50'
+
+export const splitChevronBtnGlassOff =
+  'border-l border-white/25 hover:bg-rose-600/20'
+
+export const dockPanelGlassActive =
+  'border-teal-400/50 bg-teal-500/28 text-teal-50 ring-1 ring-teal-300/30 hover:bg-teal-500/36'

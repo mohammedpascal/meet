@@ -16,16 +16,15 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import {
   clampDockOffsetPure,
-  dockBtn,
-  dockBtnOff,
-  dockScreenLkActive,
-  dockScreenLkIdle,
+  dockBtnGlass,
+  dockBtnGlassOff,
+  dockPanelGlassActive,
   DRAG_THRESHOLD_PX,
-  splitChevronBtn,
-  splitChevronBtnOff,
+  splitChevronBtnGlass,
+  splitChevronBtnGlassOff,
   splitMainBtn,
-  splitWrapOff,
-  splitWrapOn,
+  splitWrapGlassOff,
+  splitWrapGlassOn,
   VIEW_MARGIN,
 } from './floating-dock-primitives'
 import type { SidePanelTab } from './CallSidePanel'
@@ -66,7 +65,7 @@ function MediaToggle({
         disabled={pending || buttonProps.disabled}
         aria-label={label}
         title={label}
-        className={`${dockBtn} ${off ? dockBtnOff : ''} ${buttonProps.className ?? ''}`}
+        className={`${dockBtnGlass} ${off ? dockBtnGlassOff : ''} ${buttonProps.className ?? ''}`}
       >
         {off ? (
           <IconOff className="h-5 w-5" aria-hidden />
@@ -78,7 +77,7 @@ function MediaToggle({
   }
 
   return (
-    <div className={off ? splitWrapOff : splitWrapOn}>
+    <div className={off ? splitWrapGlassOff : splitWrapGlassOn}>
       <button
         type="button"
         {...buttonProps}
@@ -96,7 +95,7 @@ function MediaToggle({
       <button
         type="button"
         onClick={onOpenDeviceList}
-        className={`${splitChevronBtn} ${off ? splitChevronBtnOff : ''}`}
+        className={`${splitChevronBtnGlass} ${off ? splitChevronBtnGlassOff : ''}`}
         aria-label={deviceListLabel}
         title={deviceListLabel}
       >
@@ -127,6 +126,8 @@ export default function FloatingControlsDock({
   onSelectSidePanelTab,
 }: Props) {
   const screen = useTrackToggle({ source: Track.Source.ScreenShare })
+  const { className: _omitScreenLkClass, ...screenButtonProps } =
+    screen.buttonProps
   const [offset, setOffset] = useState({ x: 0, y: 0 })
   const [collapsed, setCollapsed] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
@@ -258,58 +259,50 @@ export default function FloatingControlsDock({
     const p = pendingOffsetRef.current
     pendingOffsetRef.current = null
     if (p) setOffset(p)
-    if (!didDrag) setCollapsed(true)
+    if (!didDrag) setCollapsed((c) => !c)
   }
 
   const panelActive = (tab: SidePanelTab) =>
     sidePanelOpen && sidePanelTab === tab
 
-  if (collapsed) {
-    return (
-      <button
-        type="button"
-        onClick={() => setCollapsed(false)}
-        className={`pointer-events-auto fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-30 ${dockBtn} ${
-          sidePanelOpen
-            ? 'right-[calc(1rem+min(24rem,calc(100vw-6rem)))]'
-            : 'right-4'
-        }`}
-        aria-label="Show call controls"
-        title="Show call controls"
-      >
-        <GripVertical className="h-5 w-5 text-slate-400 dark:text-slate-500" aria-hidden />
-      </button>
-    )
-  }
-
   return (
     <div
       ref={rootRef}
-      className={`pointer-events-auto absolute left-1/2 z-30 w-[calc(100%-1.5rem)] max-w-3xl sm:w-auto sm:min-w-0 ${isDragging ? 'will-change-transform transition-none' : ''}`}
+      className={`pointer-events-auto absolute right-3 z-30 w-fit max-w-[min(100%-1.5rem,48rem)] sm:right-4`}
       style={{
         bottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
-        transform: `translate(calc(-50% + ${offset.x}px), ${offset.y}px)`,
+        transform: `translate(${offset.x}px, ${offset.y}px)`,
       }}
     >
-      <div className="flex flex-row overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 shadow-[0_20px_50px_-12px_rgba(15,23,42,0.38)] ring-1 ring-black/[0.06] backdrop-blur-md dark:border-slate-600/90 dark:bg-slate-900/95 dark:ring-white/[0.08]">
+      <div className="flex min-w-0 flex-row overflow-hidden rounded-2xl bg-white/10 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.45)] ring-1 ring-white/15 backdrop-blur-sm">
         <button
           type="button"
           onPointerDown={onHandlePointerDown}
           onPointerMove={onHandlePointerMove}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
-          className="flex h-auto shrink-0 cursor-grab touch-none flex-col items-center justify-center self-stretch border-r border-slate-200/80 bg-white/90 px-2 text-slate-400 active:cursor-grabbing dark:border-slate-600/80 dark:bg-slate-800/90 dark:text-slate-500"
-          aria-label="Drag to move or tap to hide call controls"
-          title="Drag to move; tap to hide"
+          className="flex h-auto shrink-0 cursor-grab touch-none flex-col items-center justify-center self-stretch border-r border-white/20 bg-white/20 px-2 text-white/65 backdrop-blur-sm active:cursor-grabbing"
+          aria-label={
+            collapsed
+              ? 'Drag to move or tap to show call controls'
+              : 'Drag to move or tap to hide call controls'
+          }
+          title={collapsed ? 'Drag to move; tap to show' : 'Drag to move; tap to hide'}
         >
           <GripVertical className="h-5 w-5" aria-hidden />
         </button>
         <div
-          className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-4"
-          role="toolbar"
-          aria-label="Call controls"
+          className={`min-w-0 overflow-hidden ${isDragging ? 'transition-none' : 'transition-[max-width,opacity] duration-300 ease-in-out'} ${
+            collapsed ? 'max-w-0 opacity-0 pointer-events-none' : 'max-w-[2000px] opacity-100'
+          }`}
+          aria-hidden={collapsed}
         >
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+          <div
+            className="flex w-max min-w-0 max-w-[min(100vw-3rem,48rem)] flex-wrap items-center justify-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-4"
+            role="toolbar"
+            aria-label="Call controls"
+          >
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
             <MediaToggle
               source={Track.Source.Microphone}
               labelOn="Mute microphone"
@@ -328,23 +321,23 @@ export default function FloatingControlsDock({
               onOpenDeviceList={onOpenCameraDevices}
               deviceListLabel="Choose camera"
             />
-          </div>
+            </div>
 
-          <div
-            className="hidden h-8 w-px bg-slate-200 dark:bg-slate-600 sm:block"
-            aria-hidden
-          />
+            <div
+              className="hidden h-8 w-px bg-white/20 sm:block"
+              aria-hidden
+            />
 
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
             <button
               type="button"
-              {...screen.buttonProps}
+              {...screenButtonProps}
               disabled={screen.pending || screen.buttonProps.disabled}
               aria-label={
                 screen.enabled ? 'Stop screen sharing' : 'Share screen'
               }
               title={screen.enabled ? 'Stop sharing' : 'Share screen'}
-              className={`${dockBtn} ${screen.enabled ? dockScreenLkActive : dockScreenLkIdle} ${screen.buttonProps.className ?? ''}`}
+              className={`${dockBtnGlass} ${screen.enabled ? dockPanelGlassActive : ''} rounded-xl`}
             >
               <MonitorUp className="h-5 w-5" aria-hidden />
             </button>
@@ -353,7 +346,7 @@ export default function FloatingControlsDock({
               onClick={() => onSelectSidePanelTab('chat')}
               aria-label={panelActive('chat') ? 'Close chat panel' : 'Open chat'}
               title="Chat"
-              className={`${dockBtn} ${panelActive('chat') ? 'border-teal-200 bg-teal-50 text-teal-900 dark:border-teal-800 dark:bg-teal-950/50 dark:text-teal-100' : ''} !rounded-xl`}
+              className={`${dockBtnGlass} ${panelActive('chat') ? dockPanelGlassActive : ''} rounded-xl`}
             >
               <MessageSquare className="h-5 w-5" aria-hidden />
             </button>
@@ -366,7 +359,7 @@ export default function FloatingControlsDock({
                   : 'Open participants'
               }
               title="Participants"
-              className={`${dockBtn} ${panelActive('participants') ? 'border-teal-200 bg-teal-50 text-teal-900 dark:border-teal-800 dark:bg-teal-950/50 dark:text-teal-100' : ''} !rounded-xl`}
+              className={`${dockBtnGlass} ${panelActive('participants') ? dockPanelGlassActive : ''} rounded-xl`}
             >
               <Users className="h-5 w-5" aria-hidden />
             </button>
@@ -379,18 +372,23 @@ export default function FloatingControlsDock({
                   : 'Open settings'
               }
               title="Settings"
-              className={`${dockBtn} ${panelActive('settings') ? 'border-teal-200 bg-teal-50 text-teal-900 dark:border-teal-800 dark:bg-teal-950/50 dark:text-teal-100' : ''} !rounded-xl`}
+              className={`${dockBtnGlass} ${panelActive('settings') ? dockPanelGlassActive : ''} rounded-xl`}
             >
               <Settings className="h-5 w-5" aria-hidden />
             </button>
+            </div>
+
+            <div
+              className="hidden h-8 w-px bg-white/20 sm:block"
+              aria-hidden
+            />
+
+            <LeaveCallButton
+              onLeave={onLeave}
+              variant="glass"
+              className="shrink-0"
+            />
           </div>
-
-          <div
-            className="hidden h-8 w-px bg-slate-200 dark:bg-slate-600 sm:block"
-            aria-hidden
-          />
-
-          <LeaveCallButton onLeave={onLeave} className="shrink-0" />
         </div>
       </div>
     </div>
