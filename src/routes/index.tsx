@@ -3,7 +3,7 @@ import { useServerFn } from '@tanstack/react-start'
 import { useCallback, useEffect, useState } from 'react'
 import LiveKitMeeting from '../components/LiveKitMeeting'
 import JoinPageShell from '../components/join/JoinPageShell'
-import PreCallCard from '../components/join/PreCallCard'
+import PreCallExperience from '../components/join/PreCallExperience'
 import { usePreviewMedia } from '../components/join/usePreviewMedia'
 import { useCallUi } from '../context/call-ui-context'
 import { getLiveKitToken } from '../server/livekit-token'
@@ -22,8 +22,8 @@ function MeetPage() {
   const fetchToken = useServerFn(getLiveKitToken)
   const { setCallSession } = useCallUi()
 
-  const [room, setRoom] = useState(roomFromUrl)
   const [name, setName] = useState(nameFromUrl)
+  const room = roomFromUrl
   const [session, setSession] = useState<{
     token: string
     serverUrl: string
@@ -70,9 +70,8 @@ function MeetPage() {
   )
 
   useEffect(() => {
-    setRoom(roomFromUrl)
     setName(nameFromUrl)
-  }, [roomFromUrl, nameFromUrl])
+  }, [nameFromUrl])
 
   useEffect(() => {
     if (!session) {
@@ -98,13 +97,13 @@ function MeetPage() {
   }, [session, room, name, setCallSession])
 
   const handleJoin = () => {
-    void join(room.trim(), name.trim(), audioEnabled, videoEnabled)
+    void join(roomFromUrl.trim(), name.trim(), audioEnabled, videoEnabled)
   }
 
   const leave = () => {
     setSession(null)
     void navigate({
-      search: { room: room.trim(), name: name.trim() },
+      search: { room: roomFromUrl.trim(), name: name.trim() },
       replace: true,
     })
   }
@@ -119,19 +118,18 @@ function MeetPage() {
     >
       {!session ? (
         <JoinPageShell>
-          <PreCallCard
+          <PreCallExperience
+            roomLabel={roomFromUrl}
             stream={stream}
             videoEnabled={videoEnabled}
             audioEnabled={audioEnabled}
             onToggleVideo={() => setVideoEnabled((v) => !v)}
             onToggleAudio={() => setAudioEnabled((v) => !v)}
             permissionDenied={permissionDenied}
-            room={room}
             name={name}
-            onRoomChange={setRoom}
             onNameChange={setName}
             onJoin={handleJoin}
-            joinDisabled={!room.trim() || !name.trim()}
+            joinDisabled={!roomFromUrl.trim() || !name.trim()}
             joining={busy}
             error={error}
             replaceInputDevice={replaceInputDevice}

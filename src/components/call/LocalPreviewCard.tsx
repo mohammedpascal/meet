@@ -33,7 +33,7 @@ export default function LocalPreviewCard({
           <ParticipantContextIfNeeded participant={localParticipant}>
             <VideoTrack
               trackRef={cam}
-              className="h-full w-full object-cover"
+              className="h-full w-full scale-x-[-1] object-cover"
             />
           </ParticipantContextIfNeeded>
         ) : (
