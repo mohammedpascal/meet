@@ -278,14 +278,14 @@ export default function FloatingControlsDock({
         transform: `translate(${offset.x}px, ${offset.y}px)`,
       }}
     >
-      <div className="isolate flex min-w-0 flex-row overflow-hidden rounded-2xl bg-white/10 pr-1 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.45)] ring-1 ring-white/15 backdrop-blur-sm sm:pr-0">
+      <div className="isolate flex min-h-0 min-w-0 flex-row items-stretch overflow-hidden rounded-2xl bg-white/10 pr-1 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.45)] ring-1 ring-white/15 backdrop-blur-sm sm:pr-0">
         <button
           type="button"
           onPointerDown={onHandlePointerDown}
           onPointerMove={onHandlePointerMove}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
-          className="relative z-20 flex h-auto shrink-0 cursor-grab touch-none flex-col items-center justify-center self-stretch border-r border-white/20 bg-white/20 px-2 text-white/65 backdrop-blur-sm active:cursor-grabbing"
+          className="relative z-20 flex min-h-12 w-11 shrink-0 cursor-grab touch-none flex-col items-center justify-center self-stretch border-r border-white/20 bg-white/20 px-0 text-white/65 backdrop-blur-sm active:cursor-grabbing sm:min-h-0 sm:w-auto sm:px-2"
           aria-label={
             collapsed
               ? 'Drag to move or tap to expand mic, camera, and other controls'
@@ -300,16 +300,16 @@ export default function FloatingControlsDock({
           <GripVertical className="h-5 w-5" aria-hidden />
         </button>
         <div
-          className={`relative z-0 overflow-hidden ${collapsed ? 'invisible max-w-0 min-w-0 w-0 shrink-0 grow-0 basis-0 opacity-0 pointer-events-none' : 'visible max-w-none min-w-0 w-auto flex-1 opacity-100 sm:max-w-[2000px] sm:flex-none sm:grow-0'} ${isDragging ? 'transition-none' : 'transition-[max-width,opacity,visibility] duration-300 ease-in-out'}`}
+          className={`relative z-0 overflow-hidden ${collapsed ? 'invisible h-0 max-h-0 min-h-0 max-w-0 min-w-0 w-0 shrink-0 grow-0 basis-0 opacity-0 pointer-events-none' : 'visible h-auto max-h-none min-h-0 max-w-none min-w-0 w-auto flex-1 opacity-100 sm:max-w-[2000px] sm:flex-none sm:grow-0'} ${isDragging ? 'transition-none' : 'transition-[max-width,max-height,opacity,visibility] duration-300 ease-in-out'}`}
           aria-hidden={collapsed}
           inert={collapsed ? true : undefined}
         >
           <div
-            className={`flex max-w-none min-w-0 flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden overscroll-x-contain py-2 pl-2 pr-1 [scrollbar-width:none] sm:max-w-[min(100vw-3rem,48rem)] sm:w-max sm:flex-wrap sm:justify-center sm:gap-3 sm:overflow-visible sm:px-4 sm:py-2.5 [&::-webkit-scrollbar]:hidden ${collapsed ? 'pointer-events-none' : ''}`}
+            className={`flex w-full min-w-0 max-w-none flex-col items-center gap-2 overflow-visible py-2 pl-2 pr-1 sm:w-max sm:max-w-[min(100vw-3rem,48rem)] sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3 sm:px-4 sm:py-2.5 ${collapsed ? 'pointer-events-none' : ''}`}
             role="toolbar"
             aria-label="Call controls"
           >
-            <div className="flex shrink-0 flex-nowrap items-center gap-1.5 sm:flex-wrap sm:justify-center sm:gap-3">
+            <div className="flex w-full shrink-0 flex-row flex-wrap items-center justify-center gap-1.5 sm:w-auto sm:justify-center sm:gap-3">
             <MediaToggle
               source={Track.Source.Microphone}
               labelOn="Mute microphone"
@@ -335,7 +335,7 @@ export default function FloatingControlsDock({
               aria-hidden
             />
 
-            <div className="flex shrink-0 flex-nowrap items-center gap-1.5 sm:flex-wrap sm:justify-center sm:gap-3">
+            <div className="flex w-full shrink-0 flex-row flex-wrap items-center justify-center gap-1.5 sm:w-auto sm:justify-center sm:gap-3">
             <button
               type="button"
               {...screenButtonProps}
@@ -387,7 +387,7 @@ export default function FloatingControlsDock({
 
           </div>
         </div>
-        <div className="relative z-20 flex shrink-0 items-center self-stretch border-l border-white/20 py-2 pl-2 pr-2.5 sm:px-3 sm:py-2.5">
+        <div className="relative z-20 flex shrink-0 items-center justify-center self-stretch border-l border-white/20 py-1.5 pl-2 pr-2.5 sm:px-3 sm:py-2.5">
           <LeaveCallButton
             onLeave={onLeave}
             variant="glass"
